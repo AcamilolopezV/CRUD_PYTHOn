@@ -1,5 +1,7 @@
 from tkinter import *
 from tkinter import ttk
+from tkinter import messagebox
+import personaDatos as crud
 
 #creacion de ventana
 ventana = Tk()
@@ -19,8 +21,66 @@ txt_correo = StringVar()
 
 #funciones
 
+#creditos
+def creditos():
+    messagebox.showinfo("Créditos", """Desarrollado por Andres Camilo Lopez V. Este programa es un CRUD básico en Python con Tkinter. Puedes realizar operaciones de creación, lectura, actualización y eliminación de datos.""")
+
+#limpiarCampos
+def limpiarCampos():
+    txt_id.set("")
+    txt_dni.set("")
+    txt_nombre.set("")
+    txt_apellido.set("")
+    txt_edad.set("")
+    txt_direccion.set("")
+    txt_correo.set("")
+
+#llenarTabla
+def llenarTabla():
+    try:
+        tabla.delete(*tabla.get_children())
+        res = crud.findAll()
+        personas = res.get("personas")
+        for fila in personas:
+            row = list(fila)
+            row.pop(0)  # Eliminar el ID de la fila
+            row = tuple(row)  # Convertir la lista a tupla
+            tabla.insert("", "end", text=id, values=row)
+    except Exception as ex:
+        messagebox.showerror("Error", f"Error al llenar la tabla: {str(ex)}")
+
+#salir del programa
+def salir():
+    if messagebox.askyesno("Salir", "¿Estás seguro de que quieres salir de la aplicación?"):
+        ventana.destroy()
+
+#guardar datos
+def guardarDatos():
+    try:
+        if txt_edad.get().isnumeric():
+            per = {
+            "dni": txt_dni.get(),
+            "nombre": txt_nombre.get(),
+            "apellido": txt_apellido.get(),
+            "edad": int(txt_edad.get()),
+            "direccion": txt_direccion.get(),
+            "correo": txt_correo.get()
+            }
+            res = crud.save(per)
+            if res.get("respuesta"):
+                messagebox.showinfo("Éxito", res.get("mensaje"))
+            else:
+                messagebox.showerror("Error", res.get("mensaje"))
+        else:
+            txt_edad.set("")
+            txt_edad.focus()
+            messagebox.showerror("Error", "La edad debe ser un número.")
+    except ValueError:
+        messagebox.showerror("Error", "Por favor, completa todos los campos correctamente.")
+
 #interfaz grafica de usuario
 def crearInterfaz():
+    global tabla
     fuente = ("Arial", 12, "bold")
     fuente_2 = ("Arial", 12)
     fuente_boton = ("Arial", 12, "bold")
@@ -48,7 +108,7 @@ def crearInterfaz():
     
     #creacion de botones
     icon_new = PhotoImage(file="icon/new.png")
-    ttk.Button(ventana, text="Guardar", command=None, image=icon_new).place(x=10, y=300, width=100, height=30)
+    ttk.Button(ventana, text="Guardar", command=guardarDatos, image=icon_new).place(x=10, y=300, width=100, height=30)
     ttk.Button(ventana, text="Actualizar", command=None).place(x=120, y=300, width=100, height=30)
     ttk.Button(ventana, text="Eliminar", command=None).place(x=230, y=300, width=100, height=30)
     ttk.Button(ventana, text="Buscar", command=None).place(x=340, y=300, width=100, height=30)
@@ -73,11 +133,29 @@ def crearInterfaz():
     tabla.heading("DIRECCION", text="DIRECCION", anchor=CENTER)
     tabla.heading("CORREO", text="CORREO", anchor=CENTER)
     
-   
+    #Menu superior
+    menuTop = Menu(ventana, tearoff=0)
+    m_archivo = Menu(menuTop)
+    m_archivo.add_command(label="Créditos", command=creditos)
+    m_archivo.add_command(label="Salir", command=salir)
+    menuTop.add_cascade(label="Archivo", menu=m_archivo)
+    ventana.config(menu=menuTop)
+    
+    m_limpiar = Menu(menuTop, tearoff=0)
+    m_limpiar.add_command(label="Limpiar campos", command=limpiarCampos)
+    menuTop.add_cascade(label="Limpiar", menu=m_limpiar)
+    ventana.config(menu=menuTop)
+    
+    m_crud = Menu(menuTop, tearoff=0)
+    m_crud.add_command(label="Guardar", image=icon_new, compound="left")
+    m_crud.add_command(label="Consultar")
+    m_crud.add_command(label="Actualizar")
+    m_crud.add_command(label="Eliminar")
+    menuTop.add_cascade(label="CRUD", menu=m_crud)
+    
 
 crearInterfaz()
 
-
-
+llenarTabla()
 #actualzia cambios en la ventana
 ventana.mainloop()

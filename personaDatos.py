@@ -17,11 +17,11 @@ def save (persona):
         if creada:
             cursor.close()
             db.close()
-            return {"respuesta: ":creada,"mensaje":"Persona registrada"}
+            return {"respuesta":creada,"mensaje":"Persona registrada"}
         else:
             cursor.close()
             db.close()
-            return {"respuesta: ":creada,"mensaje":"No se logro registrar a la persona"} 
+            return {"respuesta":creada,"mensaje":"No se logro registrar a la persona"} 
     except Exception as ex:
         if "UNIQUE" in str(ex) and "correo" in str(ex):
             mensaje = "Ya existe una persona con ese correo"
@@ -31,7 +31,7 @@ def save (persona):
             mensaje = str(ex)
             cursor.close()
             db.close()
-        return {"respuesta: ": False,"mensaje": mensaje}
+        return {"respuesta": False,"mensaje": mensaje}
 
 #funcion para buscar por dni uno solo
 def find(dniPersona):
